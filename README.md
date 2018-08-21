@@ -1,3 +1,6 @@
+# Viper - Unofficial Fork
+This is a case-sensitive fork of [viper](https://github.com/spf13/viper).
+
 ![viper logo](https://cloud.githubusercontent.com/assets/173412/10886745/998df88a-8151-11e5-9448-4736db51020d.png)
 
 Go configuration with fangs!
@@ -13,7 +16,7 @@ Many Go projects are built using Viper including:
 * [doctl](https://github.com/digitalocean/doctl)
 * [Clairctl](https://github.com/jgsqware/clairctl)
 
-[![Build Status](https://travis-ci.org/spf13/viper.svg)](https://travis-ci.org/spf13/viper) [![Join the chat at https://gitter.im/spf13/viper](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/spf13/viper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![GoDoc](https://godoc.org/github.com/spf13/viper?status.svg)](https://godoc.org/github.com/spf13/viper)
+[![Build Status](https://travis-ci.org/zijung/viper.svg)](https://travis-ci.org/zijung/viper) [![Join the chat at https://gitter.im/spf13/viper](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/spf13/viper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![GoDoc](https://godoc.org/github.com/spf13/viper?status.svg)](https://godoc.org/github.com/spf13/viper)
 
 
 ## What is Viper?
@@ -169,7 +172,7 @@ Aliases permit a single value to be referenced by multiple keys
 ```go
 viper.RegisterAlias("loud", "Verbose")
 
-viper.Set("verbose", true) // same result as next line
+viper.Set("Verbose", true) // same result as next line
 viper.Set("loud", true)   // same result as prior line
 
 viper.GetBool("loud") // true
@@ -339,7 +342,7 @@ viper.BindFlagValues("my-flags", fSet)
 To enable remote support in Viper, do a blank import of the `viper/remote`
 package:
 
-`import _ "github.com/spf13/viper/remote"`
+`import _ "github.com/zijung/viper/remote"`
 
 Viper will read a config string (as JSON, TOML, YAML or HCL) retrieved from a path
 in a Key/Value store such as etcd or Consul.  These values take precedence over
@@ -466,8 +469,8 @@ has been provided.
 
 Example:
 ```go
-viper.GetString("logfile") // case-insensitive Setting & Getting
-if viper.GetBool("verbose") {
+viper.GetString("LogFile")
+if viper.GetBool("Verbose") {
     fmt.Println("verbose enabled")
 }
 ```

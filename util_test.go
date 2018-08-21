@@ -15,7 +15,7 @@ import (
 	"testing"
 )
 
-func TestCopyAndInsensitiviseMap(t *testing.T) {
+func TestCopyMap(t *testing.T) {
 	var (
 		given = map[string]interface{}{
 			"Foo": 32,
@@ -25,15 +25,15 @@ func TestCopyAndInsensitiviseMap(t *testing.T) {
 				"cDE": "B"},
 		}
 		expected = map[string]interface{}{
-			"foo": 32,
-			"bar": map[string]interface {
+			"Foo": 32,
+			"Bar": map[string]interface {
 			}{
-				"abc": "A",
-				"cde": "B"},
+				"ABc": "A",
+				"cDE": "B"},
 		}
 	)
 
-	got := copyAndInsensitiviseMap(given)
+	got := copyMap(given)
 
 	if !reflect.DeepEqual(got, expected) {
 		t.Fatalf("Got %q\nexpected\n%q", got, expected)

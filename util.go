@@ -33,58 +33,52 @@ func (pe ConfigParseError) Error() string {
 	return fmt.Sprintf("While parsing config: %s", pe.err.Error())
 }
 
-// toCaseInsensitiveValue checks if the value is a  map;
-// if so, create a copy and lower-case the keys recursively.
-func toCaseInsensitiveValue(value interface{}) interface{} {
+// toMap checks if the value is a  map;
+// if so, create a copy .
+func toMap(value interface{}) interface{} {
 	switch v := value.(type) {
 	case map[interface{}]interface{}:
-		value = copyAndInsensitiviseMap(cast.ToStringMap(v))
+		value = copyMap(cast.ToStringMap(v))
 	case map[string]interface{}:
-		value = copyAndInsensitiviseMap(v)
+		value = copyMap(v)
 	}
 
 	return value
 }
 
-// copyAndInsensitiviseMap behaves like insensitiviseMap, but creates a copy of
-// any map it makes case insensitive.
-func copyAndInsensitiviseMap(m map[string]interface{}) map[string]interface{} {
+// copyMap behaves like parseMap, but creates a copy of
+// any map.
+func copyMap(m map[string]interface{}) map[string]interface{} {
 	nm := make(map[string]interface{})
 
 	for key, val := range m {
-		lkey := strings.ToLower(key)
 		switch v := val.(type) {
 		case map[interface{}]interface{}:
-			nm[lkey] = copyAndInsensitiviseMap(cast.ToStringMap(v))
+			nm[key] = copyMap(cast.ToStringMap(v))
 		case map[string]interface{}:
-			nm[lkey] = copyAndInsensitiviseMap(v)
+			nm[key] = copyMap(v)
 		default:
-			nm[lkey] = v
+			nm[key] = v
 		}
 	}
 
 	return nm
 }
 
-func insensitiviseMap(m map[string]interface{}) {
+func parseMap(m map[string]interface{}) {
 	for key, val := range m {
 		switch val.(type) {
 		case map[interface{}]interface{}:
 			// nested map: cast and recursively insensitivise
 			val = cast.ToStringMap(val)
-			insensitiviseMap(val.(map[string]interface{}))
+			parseMap(val.(map[string]interface{}))
 		case map[string]interface{}:
 			// nested map: recursively insensitivise
-			insensitiviseMap(val.(map[string]interface{}))
+			parseMap(val.(map[string]interface{}))
 		}
 
-		lower := strings.ToLower(key)
-		if key != lower {
-			// remove old key (not lower-cased)
-			delete(m, key)
-		}
 		// update map
-		m[lower] = val
+		m[key] = val
 	}
 }
 

@@ -21,13 +21,12 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/afero"
-	"github.com/spf13/cast"
 
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 )
 
-var yamlExample = []byte(`Hacker: true
+var yamlExample = []byte(`hacker: true
 name: steve
 hobbies:
 - skateboarding
@@ -56,7 +55,7 @@ title = "TOML Example"
 
 [owner]
 organization = "MongoDB"
-Bio = "MongoDB Chief Developer Advocate & Hacker at Large"
+bio = "MongoDB Chief Developer Advocate & Hacker at Large"
 dob = 1979-05-27T07:32:00Z # First class dates? Why not?`)
 
 var jsonExample = []byte(`{
@@ -469,7 +468,7 @@ func TestAliasesOfAliases(t *testing.T) {
 	Set("Title", "Checking Case")
 	RegisterAlias("Foo", "Bar")
 	RegisterAlias("Bar", "Title")
-	assert.Equal(t, "Checking Case", Get("FOO"))
+	assert.Equal(t, "Checking Case", Get("Foo"))
 }
 
 func TestRecursiveAliases(t *testing.T) {
@@ -642,7 +641,7 @@ func TestBoundCaseSensitivity(t *testing.T) {
 	BindEnv("eYEs", "TURTLE_EYES")
 	os.Setenv("TURTLE_EYES", "blue")
 
-	assert.Equal(t, "blue", Get("eyes"))
+	assert.Equal(t, "blue", Get("eYEs"))
 
 	var testString = "green"
 	var testValue = newStringValue(testString, &testString)
@@ -654,7 +653,7 @@ func TestBoundCaseSensitivity(t *testing.T) {
 	}
 
 	BindPFlag("eYEs", flag)
-	assert.Equal(t, "green", Get("eyes"))
+	assert.Equal(t, "green", Get("eYEs"))
 
 }
 
@@ -1259,110 +1258,6 @@ func TestDotParameter(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestCaseInsensitive(t *testing.T) {
-	for _, config := range []struct {
-		typ     string
-		content string
-	}{
-		{"yaml", `
-aBcD: 1
-eF:
-  gH: 2
-  iJk: 3
-  Lm:
-    nO: 4
-    P:
-      Q: 5
-      R: 6
-`},
-		{"json", `{
-  "aBcD": 1,
-  "eF": {
-    "iJk": 3,
-    "Lm": {
-      "P": {
-        "Q": 5,
-        "R": 6
-      },
-      "nO": 4
-    },
-    "gH": 2
-  }
-}`},
-		{"toml", `aBcD = 1
-[eF]
-gH = 2
-iJk = 3
-[eF.Lm]
-nO = 4
-[eF.Lm.P]
-Q = 5
-R = 6
-`},
-	} {
-		doTestCaseInsensitive(t, config.typ, config.content)
-	}
-}
-
-func TestCaseInsensitiveSet(t *testing.T) {
-	Reset()
-	m1 := map[string]interface{}{
-		"Foo": 32,
-		"Bar": map[interface{}]interface {
-		}{
-			"ABc": "A",
-			"cDE": "B"},
-	}
-
-	m2 := map[string]interface{}{
-		"Foo": 52,
-		"Bar": map[interface{}]interface {
-		}{
-			"bCd": "A",
-			"eFG": "B"},
-	}
-
-	Set("Given1", m1)
-	Set("Number1", 42)
-
-	SetDefault("Given2", m2)
-	SetDefault("Number2", 52)
-
-	// Verify SetDefault
-	if v := Get("number2"); v != 52 {
-		t.Fatalf("Expected 52 got %q", v)
-	}
-
-	if v := Get("given2.foo"); v != 52 {
-		t.Fatalf("Expected 52 got %q", v)
-	}
-
-	if v := Get("given2.bar.bcd"); v != "A" {
-		t.Fatalf("Expected A got %q", v)
-	}
-
-	if _, ok := m2["Foo"]; !ok {
-		t.Fatal("Input map changed")
-	}
-
-	// Verify Set
-	if v := Get("number1"); v != 42 {
-		t.Fatalf("Expected 42 got %q", v)
-	}
-
-	if v := Get("given1.foo"); v != 32 {
-		t.Fatalf("Expected 32 got %q", v)
-	}
-
-	if v := Get("given1.bar.abc"); v != "A" {
-		t.Fatalf("Expected A got %q", v)
-	}
-
-	if _, ok := m1["Foo"]; !ok {
-		t.Fatal("Input map changed")
-	}
-}
-
 func TestParseNested(t *testing.T) {
 	type duration struct {
 		Delay time.Duration
@@ -1390,20 +1285,6 @@ func TestParseNested(t *testing.T) {
 	assert.Equal(t, 1, len(items))
 	assert.Equal(t, 100*time.Millisecond, items[0].Delay)
 	assert.Equal(t, 200*time.Millisecond, items[0].Nested.Delay)
-}
-
-func doTestCaseInsensitive(t *testing.T, typ, config string) {
-	initConfig(typ, config)
-	Set("RfD", true)
-	assert.Equal(t, true, Get("rfd"))
-	assert.Equal(t, true, Get("rFD"))
-	assert.Equal(t, 1, cast.ToInt(Get("abcd")))
-	assert.Equal(t, 1, cast.ToInt(Get("Abcd")))
-	assert.Equal(t, 2, cast.ToInt(Get("ef.gh")))
-	assert.Equal(t, 3, cast.ToInt(Get("ef.ijk")))
-	assert.Equal(t, 4, cast.ToInt(Get("ef.lm.no")))
-	assert.Equal(t, 5, cast.ToInt(Get("ef.lm.p.q")))
-
 }
 
 func BenchmarkGetBool(b *testing.B) {
